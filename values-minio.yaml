@@ -1,0 +1,12 @@
+accessKey: minio
+secretKey: minio123
+persistence:
+  enabled: false
+replicas: 2
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 100m
+service:
+  type: ClusterIP
+

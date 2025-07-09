@@ -1,0 +1,6 @@
+controller:
+  replicaCount: 2
+
+defaultBackend:
+  enabled: true
+

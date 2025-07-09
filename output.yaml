@@ -1,0 +1,160 @@
+---
+# Source: nginx-frontend/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-frontend-nginx-frontend-html
+  labels:
+    app.kubernetes.io/name: nginx-frontend
+    app.kubernetes.io/instance: nginx-frontend
+data:
+  index.html: |-
+    <!DOCTYPE html>
+    <html lang="pl">
+    <head>
+    <meta charset="UTF-8">
+    <title>Galeria</title>
+    <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    h1 { margin-bottom: 20px; }
+    .gallery { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+    .gallery img { max-width: 300px; border: 2px solid #ddd; border-radius: 8px; }
+    </style>
+    </head>
+    <body>
+    <h1>Galeria z MinIO</h1>
+    <div class="gallery">
+    <img src="/demo/example.jpg" alt="Image 1">
+    <img src="/demo/example2.jpg" alt="Image 2">
+    <img src="/demo/example3.jpg" alt="Image 3">
+    </div>
+    </body>
+    </html>
+---
+# Source: nginx-frontend/templates/nginx-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-frontend-nginx-frontend-nginx-config
+  labels:
+    app.kubernetes.io/name: nginx-frontend
+    app.kubernetes.io/instance: nginx-frontend
+data:
+  nginx.conf: |-
+    worker_processes 1;
+
+    events {
+      worker_connections 1024;
+    }
+
+    http {
+      include       mime.types;
+      default_type  application/octet-stream;
+
+      sendfile        on;
+      keepalive_timeout 65;
+
+      server {
+        listen 80;
+        location / {
+          root /usr/share/nginx/html;
+          index index.html;
+          try_files $uri $uri/ =404;
+        }
+
+        location /demo/ {
+          proxy_pass http://minio.minio.svc.cluster.local:9000/demo/;
+          proxy_set_header Host $host;
+
+          proxy_set_header Authorization "Basic YWRtaW46eFJkcTlLMExoMA==";
+
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+        }
+      }
+    }
+---
+# Source: nginx-frontend/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-frontend-nginx-frontend
+  labels:
+    app.kubernetes.io/name: nginx-frontend
+    helm.sh/chart: nginx-frontend-0.1.0
+    app.kubernetes.io/instance: nginx-frontend
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80           
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: nginx-frontend
+    app.kubernetes.io/instance: nginx-frontend
+---
+# Source: nginx-frontend/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-frontend-nginx-frontend
+  labels:
+    app.kubernetes.io/name: nginx-frontend
+    helm.sh/chart: nginx-frontend-0.1.0
+    app.kubernetes.io/instance: nginx-frontend
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nginx-frontend
+      app.kubernetes.io/instance: nginx-frontend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nginx-frontend
+        app.kubernetes.io/instance: nginx-frontend
+    spec:
+      containers:
+        - name: nginx
+          image: "nginx:stable"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: html
+          configMap:
+            name: nginx-frontend-nginx-frontend-html
+        - name: nginx-conf
+          configMap:
+            name: nginx-frontend-nginx-frontend-nginx-config
+---
+# Source: nginx-frontend/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-frontend-nginx-frontend-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-frontend-nginx-frontend
+            port:
+              number: 80

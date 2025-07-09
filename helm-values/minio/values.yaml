@@ -1,0 +1,24 @@
+replicas: 2
+
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: local-path
+
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 100m
+
+service:
+  type: ClusterIP
+
+auth:
+  rootUser: mojadmin
+  rootPassword: Haslo2025!
+
+defaultBucket:
+  name: demo
+  policy: readonly
+  purge: false
+

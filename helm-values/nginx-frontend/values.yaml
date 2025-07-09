@@ -1,0 +1,29 @@
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: stable
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts:
+    - host: localhost
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: []
+
