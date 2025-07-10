@@ -113,7 +113,6 @@ Dodaj wpis do pliku `/etc/hosts`:
 127.0.0.1 demo.local
 ```
 
-Przejdź w przeglądarce do: http://demo.local
 
 ---
 
