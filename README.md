@@ -180,4 +180,4 @@ NOTES.md
 ---
 
 📌 **Autor:** Marcin4356  
-📌 **Repozytorium:** https://github.com/Marcin4356/unofficial
+📌 **Repozytorium:** https://github.com/Marcin4356/kubernetes-minio-helm
