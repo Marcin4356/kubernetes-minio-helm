@@ -1,6 +1,5 @@
-# 📄 Zadanie rekrutacyjne – Junior DevOps Engineer
 
-## 🔷 Opis zadania
+## 🔷 Opis Projektu
 
 Celem projektu jest lokalne uruchomienie klastra Kubernetes w trybie multi-node oraz wdrożenie w nim trzech komponentów przy pomocy Helm:
 
@@ -181,3 +180,4 @@ NOTES.md
 
 📌 **Autor:** Marcin4356  
 📌 **Repozytorium:** https://github.com/Marcin4356/kubernetes-minio-helm
+
